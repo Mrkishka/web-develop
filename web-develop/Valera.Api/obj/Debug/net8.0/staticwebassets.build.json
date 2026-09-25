@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "vZDAPqs9BmMnwNyiUccTNK1pHkMCW4VtZJgXJqde1jY=",
+  "Source": "Valera.Api",
+  "BasePath": "_content/Valera.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
