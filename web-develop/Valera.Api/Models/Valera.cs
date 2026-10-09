@@ -4,11 +4,16 @@ namespace Valera.Api.Models
 {
     public class Valera
     {
+        public int Id { get; private set; }            // PK для EF Core
+
         public int Health { get; private set; }        // Здоровье 0..100
         public int Mana { get; private set; }          // Мана / алкоголь в крови 0..100
         public int Cheerfulness { get; private set; }  // Жизнерадостность -10..10
         public int Fatigue { get; private set; }       // Усталость 0..100
         public int Money { get; private set; }         // Деньги
+
+        // Конструктор для EF Core (materialization)
+        private Valera() { }
 
         public Valera(
             int health = 100,
@@ -45,7 +50,6 @@ namespace Valera.Api.Models
             Cheerfulness += 1;
             Mana -= 10;
             Fatigue += 10;
-
             Clamp();
         }
 
@@ -56,7 +60,6 @@ namespace Valera.Api.Models
             Fatigue += 10;
             Health -= 5;
             Money -= 20;
-
             Clamp();
         }
 
@@ -67,7 +70,6 @@ namespace Valera.Api.Models
             Fatigue += 40;
             Health -= 10;
             Money -= 100;
-
             Clamp();
         }
 
@@ -78,7 +80,6 @@ namespace Valera.Api.Models
             Mana += 90;
             Fatigue += 80;
             Money -= 150;
-
             Clamp();
         }
 
@@ -90,7 +91,6 @@ namespace Valera.Api.Models
             Mana += 10;
             Money += 10 + (bonus ? 50 : 0);
             Fatigue += 20;
-
             Clamp();
         }
 
@@ -104,7 +104,6 @@ namespace Valera.Api.Models
 
             Mana -= 50;
             Fatigue -= 70;
-
             Clamp();
         }
 
