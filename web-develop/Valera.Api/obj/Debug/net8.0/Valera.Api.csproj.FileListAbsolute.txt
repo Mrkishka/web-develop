@@ -132,3 +132,7 @@
 /home/mrk/4coursefall/web-develop/Valera.Api/obj/Debug/net8.0/Valera.Api.pdb
 /home/mrk/4coursefall/web-develop/Valera.Api/obj/Debug/net8.0/Valera.Api.genruntimeconfig.cache
 /home/mrk/4coursefall/web-develop/Valera.Api/obj/Debug/net8.0/ref/Valera.Api.dll
+/home/mrk/4coursefall/web-develop/Valera.Api/bin/Debug/net8.0/package-lock.json
+/home/mrk/4coursefall/web-develop/Valera.Api/bin/Debug/net8.0/valera-frontend/.oxlintrc.json
+/home/mrk/4coursefall/web-develop/Valera.Api/bin/Debug/net8.0/valera-frontend/package-lock.json
+/home/mrk/4coursefall/web-develop/Valera.Api/bin/Debug/net8.0/valera-frontend/package.json

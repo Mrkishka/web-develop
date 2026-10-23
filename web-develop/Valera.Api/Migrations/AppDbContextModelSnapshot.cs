@@ -37,6 +37,10 @@ namespace Valera.Api.Migrations
                     b.Property<int>("Money")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Valeras", (string)null);

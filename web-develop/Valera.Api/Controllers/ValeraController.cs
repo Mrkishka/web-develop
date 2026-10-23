@@ -6,55 +6,56 @@ namespace Valera.Api.Controllers;
 
 [ApiController]
 [Route("api/valera")]
-[Produces("application/json")]
 public class ValeraController : ControllerBase
 {
     private readonly ValeraService _service;
-
     public ValeraController(ValeraService service) => _service = service;
 
-    /// <summary>Текущее состояние Валеры.</summary>
     [HttpGet]
-    public async Task<ActionResult<ValeraStateDto>> Get() =>
-        Ok(await _service.GetStateAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
-    /// <summary>Создать/пересоздать Валеру с указанными параметрами.</summary>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var v = await _service.GetByIdAsync(id);
+        return v is null ? NotFound() : Ok(v);
+    }
+
     [HttpPost]
-    public async Task<ActionResult<ValeraStateDto>> Create([FromBody] CreateValeraDto dto) =>
+    public async Task<IActionResult> Create([FromBody] CreateValeraDto dto) =>
         Ok(await _service.CreateAsync(dto));
 
-    /// <summary>Пойти на работу (Mana &lt; 50, Fatigue &lt; 10).</summary>
-    [HttpPost("work")]
-    public async Task<ActionResult<ValeraStateDto>> Work() =>
-        Ok(await _service.GoToWorkAsync());
+    [HttpPost("{id}/work")]
+    public async Task<IActionResult> Work(int id) => await Action(id, v => v.GoToWork());
 
-    /// <summary>Созерцать природу.</summary>
-    [HttpPost("contemplate")]
-    public async Task<ActionResult<ValeraStateDto>> Contemplate() =>
-        Ok(await _service.ContemplateNatureAsync());
+    [HttpPost("{id}/contemplate")]
+    public async Task<IActionResult> Contemplate(int id) => await Action(id, v => v.ContemplateNature());
 
-    /// <summary>Пить вино и смотреть сериал.</summary>
-    [HttpPost("drink-wine")]
-    public async Task<ActionResult<ValeraStateDto>> DrinkWine() =>
-        Ok(await _service.DrinkWineAndWatchSeriesAsync());
+    [HttpPost("{id}/drink-wine")]
+    public async Task<IActionResult> DrinkWine(int id) => await Action(id, v => v.DrinkWineAndWatchSeries());
 
-    /// <summary>Сходить в бар.</summary>
-    [HttpPost("bar")]
-    public async Task<ActionResult<ValeraStateDto>> Bar() =>
-        Ok(await _service.GoToBarAsync());
+    [HttpPost("{id}/bar")]
+    public async Task<IActionResult> Bar(int id) => await Action(id, v => v.GoToBar());
 
-    /// <summary>Выпить с маргинальными личностями.</summary>
-    [HttpPost("drink-marginals")]
-    public async Task<ActionResult<ValeraStateDto>> DrinkMarginals() =>
-        Ok(await _service.DrinkWithMarginalsAsync());
+    [HttpPost("{id}/drink-marginals")]
+    public async Task<IActionResult> DrinkMarginals(int id) => await Action(id, v => v.DrinkWithMarginals());
 
-    /// <summary>Петь в метро.</summary>
-    [HttpPost("sing")]
-    public async Task<ActionResult<ValeraStateDto>> Sing() =>
-        Ok(await _service.SingInMetroAsync());
+    [HttpPost("{id}/sing")]
+    public async Task<IActionResult> Sing(int id) => await Action(id, v => v.SingInMetro());
 
-    /// <summary>Спать.</summary>
-    [HttpPost("sleep")]
-    public async Task<ActionResult<ValeraStateDto>> Sleep() =>
-        Ok(await _service.SleepAsync());
+    [HttpPost("{id}/sleep")]
+    public async Task<IActionResult> Sleep(int id) => await Action(id, v => v.Sleep());
+
+    private async Task<IActionResult> Action(int id, Action<Valera.Api.Models.Valera> action)
+    {
+        try
+        {
+            var result = await _service.ExecuteActionAsync(id, action);
+            return result is null ? NotFound() : Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

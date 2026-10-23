@@ -6,6 +6,7 @@ namespace Valera.Api.Models
     {
         public int Id { get; private set; }            // PK для EF Core
 
+        public string Name { get; private set; } = "Безымянный";
         public int Health { get; private set; }        // Здоровье 0..100
         public int Mana { get; private set; }          // Мана / алкоголь в крови 0..100
         public int Cheerfulness { get; private set; }  // Жизнерадостность -10..10
@@ -16,12 +17,14 @@ namespace Valera.Api.Models
         private Valera() { }
 
         public Valera(
+            string name = "Безымянный",
             int health = 100,
             int mana = 0,
             int cheerfulness = 0,
             int fatigue = 0,
             int money = 0)
         {
+            Name = name;
             Health = Math.Clamp(health, 0, 100);
             Mana = Math.Clamp(mana, 0, 100);
             Cheerfulness = Math.Clamp(cheerfulness, -10, 10);

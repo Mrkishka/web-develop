@@ -1,6 +1,7 @@
 namespace Valera.Api.DTOs;
 
 public record CreateValeraDto(
+    string Name,
     int Health = 100,
     int Mana = 0,
     int Cheerfulness = 0,

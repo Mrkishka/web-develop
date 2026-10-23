@@ -11,31 +11,25 @@ public class ValeraService
 
     public ValeraService(AppDbContext db) => _db = db;
 
-    private async Task<ValeraEntity> GetOrCreateAsync()
+    // 1. Получить список всех Валер
+    public async Task<List<ValeraStateDto>> GetAllAsync()
     {
-        var v = await _db.Valeras.FirstOrDefaultAsync();
-        if (v is null)
-        {
-            v = new ValeraEntity();
-            _db.Valeras.Add(v);
-            await _db.SaveChangesAsync();
-        }
-        return v;
+        var valeras = await _db.Valeras.ToListAsync();
+        return valeras.Select(ValeraStateDto.From).ToList();
     }
 
-    public async Task<ValeraStateDto> GetStateAsync()
+    // 2. Получить одного Валеру по ID
+    public async Task<ValeraStateDto?> GetByIdAsync(int id)
     {
-        var v = await GetOrCreateAsync();
-        return ValeraStateDto.From(v);
+        var v = await _db.Valeras.FindAsync(id);
+        return v is null ? null : ValeraStateDto.From(v);
     }
 
+    // 3. Создать нового Валеру
     public async Task<ValeraStateDto> CreateAsync(CreateValeraDto dto)
     {
-        var existing = await _db.Valeras.FirstOrDefaultAsync();
-        if (existing is not null)
-            _db.Valeras.Remove(existing);
-
         var v = new ValeraEntity(
+            name: dto.Name,
             health: dto.Health,
             mana: dto.Mana,
             cheerfulness: dto.Cheerfulness,
@@ -47,58 +41,15 @@ public class ValeraService
         return ValeraStateDto.From(v);
     }
 
-    public async Task<ValeraStateDto> GoToWorkAsync()
+    // 4. Универсальный метод для выполнения любого действия (work, sleep и т.д.)
+    public async Task<ValeraStateDto?> ExecuteActionAsync(int id, Action<ValeraEntity> action)
     {
-        var v = await GetOrCreateAsync();
-        v.GoToWork();
-        await _db.SaveChangesAsync();
-        return ValeraStateDto.From(v);
-    }
+        var v = await _db.Valeras.FindAsync(id);
+        if (v is null) return null;
 
-    public async Task<ValeraStateDto> ContemplateNatureAsync()
-    {
-        var v = await GetOrCreateAsync();
-        v.ContemplateNature();
-        await _db.SaveChangesAsync();
-        return ValeraStateDto.From(v);
-    }
-
-    public async Task<ValeraStateDto> DrinkWineAndWatchSeriesAsync()
-    {
-        var v = await GetOrCreateAsync();
-        v.DrinkWineAndWatchSeries();
-        await _db.SaveChangesAsync();
-        return ValeraStateDto.From(v);
-    }
-
-    public async Task<ValeraStateDto> GoToBarAsync()
-    {
-        var v = await GetOrCreateAsync();
-        v.GoToBar();
-        await _db.SaveChangesAsync();
-        return ValeraStateDto.From(v);
-    }
-
-    public async Task<ValeraStateDto> DrinkWithMarginalsAsync()
-    {
-        var v = await GetOrCreateAsync();
-        v.DrinkWithMarginals();
-        await _db.SaveChangesAsync();
-        return ValeraStateDto.From(v);
-    }
-
-    public async Task<ValeraStateDto> SingInMetroAsync()
-    {
-        var v = await GetOrCreateAsync();
-        v.SingInMetro();
-        await _db.SaveChangesAsync();
-        return ValeraStateDto.From(v);
-    }
-
-    public async Task<ValeraStateDto> SleepAsync()
-    {
-        var v = await GetOrCreateAsync();
-        v.Sleep();
+        // Вызываем переданный метод модели (например, v.GoToWork())
+        action(v); 
+        
         await _db.SaveChangesAsync();
         return ValeraStateDto.From(v);
     }
