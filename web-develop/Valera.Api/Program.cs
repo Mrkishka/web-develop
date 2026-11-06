@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Valera.Api.Data;
 using Valera.Api.Services;
+// ДОБАВЛЕНО для JWT:
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite(connectionStrin
 
 // 2. Сервисы
 builder.Services.AddScoped<ValeraService>();
+builder.Services.AddScoped<AuthService>(); // <-- ДОБАВЛЕНО
 
 // 3. Контроллеры
 builder.Services.AddControllers();
@@ -20,30 +25,51 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 5. CORS (Разрешаем запросы с React-фронтенда)
+// 5. CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173", // Vite (стандартный порт)
-                "http://localhost:3000"  // Create React App
-              )
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
+// 6. НАСТРОЙКА JWT АУТЕНТИФИКАЦИИ (ДОБАВЛЕНО)
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
-// Автомиграции при старте (создаст БД и таблицу, если их нет)
+// Автомиграции при старте
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
-// Глобальный обработчик ошибок (на случай непредвиденных исключений)
+// Глобальный обработчик ошибок
 app.UseExceptionHandler(errApp =>
 {
     errApp.Run(async context =>
@@ -68,8 +94,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowReactApp");
-
 app.UseHttpsRedirection();
+
+// ВАЖНО: Порядок middleware строго такой!
+app.UseAuthentication(); // 1. Кто ты? (Проверяет токен)
+app.UseAuthorization();  // 2. Что тебе можно? (Проверяет [Authorize])
+
 app.MapControllers();
 
 app.Run();

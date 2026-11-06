@@ -5,6 +5,7 @@ namespace Valera.Api.Models
     public class Valera
     {
         public int Id { get; private set; }            // PK для EF Core
+        public int UserId { get; private set; }        // ID владельца (связь с User)
 
         public string Name { get; private set; } = "Безымянный";
         public int Health { get; private set; }        // Здоровье 0..100
@@ -22,7 +23,8 @@ namespace Valera.Api.Models
             int mana = 0,
             int cheerfulness = 0,
             int fatigue = 0,
-            int money = 0)
+            int money = 0,
+            int userId = 0) // <-- Добавлен userId
         {
             Name = name;
             Health = Math.Clamp(health, 0, 100);
@@ -30,6 +32,7 @@ namespace Valera.Api.Models
             Cheerfulness = Math.Clamp(cheerfulness, -10, 10);
             Fatigue = Math.Clamp(fatigue, 0, 100);
             Money = money;
+            UserId = userId;
         }
 
         public bool CanGoToWork => Mana < 50 && Fatigue < 10;
